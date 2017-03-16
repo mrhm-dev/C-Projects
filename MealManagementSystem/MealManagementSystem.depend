@@ -1,0 +1,15 @@
+# depslib dependency file v1.0
+1487454883 source:c:\users\guru\desktop\proj\mealmanagementsystem\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	<windows.h>
+
+1489352673 source:c:\users\guru\desktop\lols pen\proj\mealmanagementsystem\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	<windows.h>
+
