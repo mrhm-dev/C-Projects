@@ -85,7 +85,7 @@ void displayReportSection(void);
 
 void createMealTable(void);
 int login(void);
-int isMatchID(char id[]);
+int isMatchID(char name[], char pass[]);
 
 // Member List Section.. All Member List Functions
 MemberList*  createNode(Members data);
@@ -120,9 +120,22 @@ double getBalance(void);
 double mealRate(void);
 double costForMeal(int meal);
 
+
+//Report Section Functions
+void viewDailyReport(void);
+void generateReportFile(void);
+
 // Daily Task Section Functions.
 void updateDailyMeal(void);
 void updateDailyCost(void);
+
+
+// All Files Function Goes Here
+
+void readLoginFile();
+void writeLoginFile();
+void readMembersInfo();
+void writeMembersInfo();
 
 
 //Prototyping Ends Here
@@ -130,13 +143,14 @@ void updateDailyCost(void);
 //Instance Variable Section Starts Here
 
 double costTable[DAY] = {0};
-char nameOfMonth[20];
-char idList[15][30];
+char monthNames[50][15];
+char password[50][15];
 
 MemberList *head;
 int listSize = 0;
 int paySize = 0;
 int tableSize = 0;
+char currentPass[15], currentMonth[15];
 
 // Instance Variable Section Ends Here
 
@@ -144,6 +158,7 @@ int main()
 {
         int choice,  menu, submenu, mealDays, islogin;
         system("color 1f");
+        readLoginFile();
 
         do
         {
@@ -154,6 +169,7 @@ int main()
                 switch(choice)
                 {
                 case 0:
+                        writeLoginFile();
                         printf("Exiting...!\n");
                         break;
 
@@ -171,6 +187,8 @@ int main()
                                         switch(menu)
                                         {
                                         case 0:
+                                                printf("%\n\n\n40sLogout Successful\n\n\n");
+                                                writeMembersInfo();
                                                 break;
 
                                         case 1:
@@ -263,8 +281,10 @@ int main()
                                                                 break;
 
                                                         case 2:
+                                                                generateReportFile();
+                                                                printf("\n\n\n%40sSuccessfully Generated\n\n\n", " ");
                                                                 break;
-                                                                // this section will be complete soon.. Need File Function
+
 
                                                         default:
                                                                 printf("Not A Valid Entry\n");
@@ -534,7 +554,7 @@ void deleteMembers()
         int ind, conf, i;
 
         printf("\n\n\n%40s", " ");
-        printf("Select Index From Below To Delete\n");
+        printf("Select Index From Below To Delete (-1 for cancel)\n");
 
         displayMembers();
 
@@ -542,6 +562,11 @@ void deleteMembers()
         printf("Enter Index : ");
         scanf("%d", &ind);
 
+        if(ind == -1)
+        {
+            printf("\n\n\n%40sCancel Deleting\n\n\n", " ");
+            return;
+        }
 
         printf("\n\n\n%40s", " ");
         printf("Are Your Sure ? (1/0) : ");
@@ -752,9 +777,9 @@ char* getWeekDay(int day)
 void updateDailyCost(void)
 {
         Times tm = getTimes();
-        char dat[30];
+        char dat[30], passw[15], choice;
         double cost;
-        int i;
+        int i, editable = 1;
 
         system("CLS");
         printf("\n\n\n\n%40s", " ");
@@ -768,12 +793,6 @@ void updateDailyCost(void)
 
         printf("\n\n");
 
-         if(costTable[tm.wDay] != 0)
-        {
-                printf("\n%40s", " ");
-                printf("Already Updated\nYou Can't Change Any Data After Edited Once\n\n");
-                return;
-        }
         if(head == NULL)
         {
                 printf("\n%40s", " ");
@@ -781,27 +800,56 @@ void updateDailyCost(void)
                 return;
         }
 
-        strcpy(dat, getTimeString(tm));
+         if(costTable[tm.wDay] != 0)
+         {
+                printf("\n%40s", " ");
+                printf("Already Updated\n%40sOnly Admin Can Change Data After Edited Once\n\n", " ");
+                printf("%40sPress (e) to Edit Or (c) to Cancel : ", " ");
 
-        printf("\n\n%40s", " ");
-        printf("Today is : %s\n\n", dat);
-        printf("%40s", " ");
-        printf("Todays Cost is : ");
-        scanf("%lf", &cost);
+                scanf(" %c", &choice);
+
+                if(choice == 'e')
+                {
+                    printf("\n%40sEnter Password : ", " ");
+                    scanf("%s", &passw);
+
+                    if(strcmp(currentPass, passw) == 0)
+                    {
+                        editable = 1;
+                    }
+                    else editable = 0;
+                }
+                else
+                {
+                    printf("\n%40sUpdate Canceled\n", " ");
+                    return;
+                }
+         }
+
+        if(editable == 1)
+        {
+            strcpy(dat, getTimeString(tm));
+
+            printf("\n\n%40s", " ");
+            printf("Today is : %s\n\n", dat);
+            printf("%40s", " ");
+            printf("Todays Cost is : ");
+            scanf("%lf", &cost);
 
 
-        costTable[tm.wDay] = cost;
+            costTable[tm.wDay] = cost;
 
-        printf("\n\n\n\n%40sCost Successfully Updated\n\n\n", " ");
+            printf("\n\n\n\n%40sCost Successfully Updated\n\n\n", " ");
+        }
 }
 
 
 void updateDailyMeal(void)
 {
-        int m, i;
+        int m, i, editable = 1;
         MemberList *current = head;
         Times tm = getTimes();
-        char ch[30];
+        char ch[30], passw[15], choice;
         strcpy(ch, getTimeString(tm));
 
         system("CLS");
@@ -825,28 +873,48 @@ void updateDailyMeal(void)
                 return;
         }
 
-
-
         if(current->info.meals[tm.wDay] != -1)
         {
-                printf("\n\n%40s", " ");
-                printf("Meal Already Updated\n%40sYou can't Edit Any Data After Editing it Once\n\n", " ");
-                return;
+                printf("\n%40s", " ");
+                printf("Already Updated\n%40sOnly Admin Can Change Data After Edited Once\n\n", " ");
+                printf("%40sPress (e) to Edit Or (c) to Cancel : ", " ");
+
+                scanf(" %c", &choice);
+
+                if(choice == 'e')
+                {
+                    printf("\n%40sEnter Password : ", " ");
+                    scanf("%s", &passw);
+
+                    if(strcmp(currentPass, passw) == 0)
+                    {
+                        editable = 1;
+                    }
+                    else editable = 0;
+                }
+                else
+                {
+                    printf("\n%40sUpdate Canceled\n", " ");
+                    return;
+                }
         }
 
-        printf("\n%40s", " ");
-        printf("Enter Meals : \n");
-
-        while(current != NULL)
+        if(editable)
         {
-                printf("\n\n%40s", " ");
-                printf("%10s%12s%10s%5s", "Name : ", current->info.name, "Meal : ", " ");
-                scanf("%d", &m);
-                current->info.meals[tm.wDay] =m;
-                current = current->next;
+            printf("\n%40s", " ");
+            printf("Enter Meals : \n");
+
+            while(current != NULL)
+            {
+                    printf("\n\n%40s", " ");
+                    printf("%10s%12s%10s%5s", "Name : ", current->info.name, "Meal : ", " ");
+                    scanf("%d", &m);
+                    current->info.meals[tm.wDay] =m;
+                    current = current->next;
+            }
+            printf("\n\n\n%40s", " ");
+            printf("Meal Successfully Updated...\n");
         }
-        printf("\n\n\n%40s", " ");
-        printf("Meal Successfully Updated...\n");
 }
 
 
@@ -1008,12 +1076,81 @@ void viewDailyReport(void)
         {
                 printf("-");
         }
-        printf("\n");
+        printf("\n\n\n");
 
 
 
 }
 
+
+void generateReportFile(void)
+{
+        FILE *files;
+
+        int i, d1;
+        double d2, d3, d4;
+        Times tm = getTimes();
+        char dt[15];
+        strcpy(dt, getTimeString(tm));
+
+        MemberList *current = head;
+
+        files = fopen("MonthlyReport.txt", "w");
+
+        if(files == NULL)
+        {
+            exit(0);
+        }
+
+        fprintf(files, "%35s%25s\n", " ", "Monthly Report : ");
+        fprintf(files, "%35s" , " ");
+        for(i=0; i<40; i++)
+        {
+                fprintf(files, "%s", "-");
+        }
+        fprintf(files, "%s", "\n\n");
+
+        fprintf(files, "%27s%25s :  %-15s\n", " ", "Date", dt);
+        fprintf(files, "%27s%25s :  %-10.2lf\n", " ", "Account Balance", accountBalance());
+        fprintf(files, "%27s%25s :  %-10d\n", " ", "Total Meal", totalMeal());
+        fprintf(files, "%27s%25s :  %-10.2lf\n", " ", "Total Cost", totalCost());
+        fprintf(files, "%27s%25s :  %-10.2lf\n", " ", "Available Balance", getBalance());
+        fprintf(files, "%27s%25s :  %-10.2lf\n", " ", "Meal rate", mealRate());
+
+        fprintf(files, "\n%35s", " ");
+        for(i=0; i<40; i++)
+        {
+                fprintf(files, "%s", "=");
+        }
+        fprintf(files, "%s", "\n\n\n");
+
+
+        fprintf(files, "%-25s%-15s%-15s%-15s%-15s%-15s\n", " ", "NAME", "TOTAL MEAL", "TOTAL PAID", "TOTAL COST", "TOTAL DUE");
+        fprintf(files, "%20s", " ");
+        for(i=0; i<80; i++)
+        {
+                fprintf(files, "%s", "-");
+        }
+        fprintf(files, "%s", "\n");
+
+        while(current != NULL)
+        {
+                d1 = membersTotalMeal(current->info);
+                d2 = sumOfPayments(current->info);
+                d3 = costForMeal(d1);
+                d4 = d3-d2;
+                fprintf(files, "%-25s%-15s%-15d%-15.2lf%-15.2lf%-15.2lf\n",  " " , current->info.name, d1, d2, d3, d4);
+
+                current = current->next;
+        }
+
+        fprintf(files, "%20s", " ");
+        for(i=0; i<80; i++)
+        {
+                fprintf(files, "%s", "-");
+        }
+        fclose(files);
+}
 
 // ******************* Report Section Ends Here ***************************
 
@@ -1185,7 +1322,6 @@ void displayReportSection(void)
 void createMealTable(void)
 {
         char monthName[15], pass[15];
-        char id[30];
         int i;
         system("CLS");
         printf("\n\n\n\n");
@@ -1202,10 +1338,8 @@ void createMealTable(void)
         printf("\n\n%35s%-25s%3s", " ", "Enter Your Password: ", " ");
         scanf("%s", &pass);
 
-        strcpy(id, monthName);
-        strcat(id, pass);
-
-        strcpy(idList[tableSize], id);
+        strcpy(monthNames[tableSize], monthName);
+        strcpy(password[tableSize], pass);
         tableSize++;
         printf("\n\n\n\n%30s", " ");
         printf("Your Account Successfully Created...!\n\n");
@@ -1217,7 +1351,7 @@ void createMealTable(void)
 int login(void)
 {
         int i;
-        char name[15], pass[15], id[30];
+        char name[15], pass[15];
         system("CLS");
         printf("\n\n\n\n%35s", " ");
         printf("Login To Meal Management System");
@@ -1242,25 +1376,25 @@ int login(void)
 
         printf("\n\n\n");
 
-        strcpy(id, name);
-        strcat(id, pass);
-
-        if(isMatchID(id) == 1)
+        if(isMatchID(name, pass) == 1)
         {
             printf("\n%30s%-30s\n\n", " ", "Access Granted");
+            strcpy(currentMonth, name);
+            strcpy(currentPass, pass);
+            readMembersInfo();
             return 1;
         }
 
         return -1;
 }
 
-int isMatchID(char id[])
+int isMatchID(char name[], char pass[])
 {
         int i;
 
         for(i=0; i<tableSize; i++)
         {
-                if(strcmp(idList[i], id) == 0)
+                if(strcmp(monthNames[i], name) == 0 && strcmp(password[i], pass) == 0)
                 {
                         return 1;
                 }
@@ -1272,8 +1406,156 @@ int isMatchID(char id[])
 
 
 
+void readLoginFile()
+{
+    FILE *loginFile;
+
+    char names[15], passw[15];
+
+    loginFile = fopen("logins.dat", "r+");
+
+    if(loginFile == NULL)
+    {
+        loginFile = fopen("logins.dat", "w");
+
+        if(loginFile == NULL)
+        {
+            exit(0);
+        }
+    }
+
+    while(fscanf(loginFile, "%s %s", &names, &passw) != EOF)
+    {
+        strcpy(monthNames[tableSize], names);
+        strcpy(password[tableSize], passw);
+
+        tableSize++;
+    }
+    fclose(loginFile);
+
+}
+
+void writeLoginFile()
+{
+    FILE *loginFile;
+
+    int i;
+
+    loginFile = fopen("logins.dat", "w+");
+
+    if(loginFile == NULL)
+    {
+        exit(0);
+    }
+
+    for(i=0; i<tableSize; i++)
+    {
+        fprintf(loginFile, "%s %s\n", monthNames[i], password[i]);
+    }
+
+    fclose(loginFile);
+}
 
 
+void readMembersInfo()
+{
+    FILE *memberFile;
+    char filename[30];
+
+    char name[30];
+    double pays;
+    int meal, i;
+
+    Members temp;
+
+    strcpy(filename, currentMonth);
+    strcat(filename, ".dat");
+
+    memberFile = fopen(filename, "r+");
+
+    if(memberFile == NULL)
+    {
+        memberFile = fopen(filename, "w");
+
+        if(memberFile == NULL)
+        {
+            exit(0);
+        }
+    }
+
+    while(!feof(memberFile))
+    {
+        fscanf(memberFile, "%s", name);
+
+        strcpy(temp.name, name);
+
+        for(i=0; i<10; i++)
+        {
+            fscanf(memberFile, "%lf", &pays);
+
+            if(pays != 0.0)
+            {
+                temp.pay[i] = pays;
+                paySize++;
+            }
+            else{
+                temp.pay[i] = pays;
+            }
+        }
+
+        for(i=0; i<32; i++)
+        {
+            fscanf(memberFile, "%d", meal);
+            temp.meals[i] = meal;
+        }
+
+        addMember(temp);
+    }
+
+    fclose(memberFile);
+}
+
+
+void writeMembersInfo()
+{
+    FILE *memberFile;
+    char fileName[30];
+    int i;
+
+    MemberList *temp = head;
+
+    strcpy(fileName, currentMonth);
+    strcat(fileName, ".dat");
+
+    memberFile = fopen(fileName, "w+");
+
+    if(memberFile == NULL)
+    {
+        exit(0);
+    }
+
+    while(temp != NULL)
+    {
+        fprintf(memberFile, "%s\n", temp->info.name);
+
+        for(i=0; i<10; i++)
+        {
+            fprintf(memberFile, "%.2lf", temp->info.pay[i]);
+        }
+
+        fprintf(memberFile, "%s", "\n");
+
+        for(i=0; i<32; i++)
+        {
+            fprintf(memberFile, "%d", temp->info.meals[i]);
+        }
+
+        fprintf(memberFile, "%s", "\n");
+    }
+
+    fclose(memberFile);
+
+}
 
 
 
