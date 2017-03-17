@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1489734962 source:c:\users\guru\desktop\lols pen\proj\schedulemanagementsystem\main.c
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<string.h>
+	<windows.h>
+	<stdbool.h>
+
