@@ -19,7 +19,7 @@ struct member
 {
         // This structure has three properties. Name, Pay and Meals[]
         char name[30];
-        double pay[10];
+        double pay[2];
         int meals[DAY];
 };
 
@@ -124,6 +124,8 @@ double costForMeal(int meal);
 //Report Section Functions
 void viewDailyReport(void);
 void generateReportFile(void);
+void reportLog(void);
+void membersMealByDate(void);
 
 // Daily Task Section Functions.
 void updateDailyMeal(void);
@@ -136,6 +138,11 @@ void readLoginFile();
 void writeLoginFile();
 void readMembersInfo();
 void writeMembersInfo();
+void readCostInfo();
+void writeCostInfo();
+
+
+void reset();
 
 
 //Prototyping Ends Here
@@ -148,7 +155,6 @@ char password[50][15];
 
 MemberList *head;
 int listSize = 0;
-int paySize = 0;
 int tableSize = 0;
 char currentPass[15], currentMonth[15];
 
@@ -187,8 +193,10 @@ int main()
                                         switch(menu)
                                         {
                                         case 0:
-                                                printf("%\n\n\n40sLogout Successful\n\n\n");
+                                                printf("%\n\n\n%40sLogout Successful\n\n\n");
                                                 writeMembersInfo();
+                                                writeCostInfo();
+                                                reset();
                                                 break;
 
                                         case 1:
@@ -281,6 +289,14 @@ int main()
                                                                 break;
 
                                                         case 2:
+                                                                membersMealByDate();
+                                                                break;
+
+                                                        case 3:
+                                                                reportLog();
+                                                                break;
+
+                                                        case 4:
                                                                 generateReportFile();
                                                                 printf("\n\n\n%40sSuccessfully Generated\n\n\n", " ");
                                                                 break;
@@ -456,7 +472,7 @@ Members get(int index)
         }
 
         MemberList *current = head;
-        while(current != NULL && index>0)
+        while(current != NULL && index > 0)
         {
                 current = current->next;
                 index--;
@@ -526,11 +542,9 @@ Members createMember(void)
                 mem.meals[i] = -1;
         }
 
-        for(i=0; i<10; i++)
-        {
-                mem.pay[i] = 0;
-        }
-        mem.pay[paySize++] = pay;
+
+        mem.pay[0] = pay;
+        mem.pay[1] = 0;
 
         printf("\n\n\n\n%40s", " ");
         printf("Member Creates Successfully.\n\n\n");
@@ -672,7 +686,7 @@ void addBalance(void)
 
                         if(conf == 1)
                         {
-                                current->info.pay[paySize++] = amt;
+                                current->info.pay[0] = amt+current->info.pay[0];
 
                                 printf("\n\n%40s", " ");
                                 printf("Amount Updated Successfully...\n");
@@ -697,15 +711,7 @@ void addBalance(void)
 
 double sumOfPayments(Members m)
 {
-        int i;
-        double sum = 0;
-
-        for(i=0; i<paySize; i++)
-        {
-                sum = sum + m.pay[i];
-        }
-
-        return sum;
+        return m.pay[0];
 }
 
 //********* Times Function Goes Here ************
@@ -714,7 +720,7 @@ double sumOfPayments(Members m)
 Times getTimes()
 {
        Times tm;
-        GetSystemTime(&tm);
+       GetSystemTime(&tm);
 
        return tm;
 }
@@ -724,7 +730,7 @@ char* getTimeString(Times tm)
 {
         char timeString[12];
 
-       sprintf(timeString, "%d/%d/%d %s", tm.wDay, tm.wMonth, tm.wYear, getWeekDay(tm.wDayOfWeek));
+        sprintf(timeString, "%d/%d/%d %s", tm.wDay, tm.wMonth, tm.wYear, getWeekDay(tm.wDayOfWeek));
 
         return timeString;
 }
@@ -1152,6 +1158,89 @@ void generateReportFile(void)
         fclose(files);
 }
 
+void reportLog(void)
+{
+    int i;
+    Times tm = getTimes();
+    MemberList *temp = head;
+
+    system("CLS");
+    printf("\n\n\n%40sMonthly Meal Log\n\n", " ");
+
+    printf("%30s%10s", " ", "DAY");
+
+    while(temp != NULL)
+    {
+        printf("%10s", temp->info.name);
+        temp = temp->next;
+    }
+    printf("\n");
+
+
+    for(i=1; i<tm.wDay; i++)
+    {
+        printf("\n%30s%10d", " ", i);
+
+        temp = head;
+        while(temp != NULL)
+        {
+            printf("%10d", temp->info.meals[i]);
+            temp = temp->next;
+        }
+    }
+
+    printf("\n\n\n");
+
+
+}
+
+void membersMealByDate(void)
+{
+    char ch, name[15];
+    int day, index;
+    Members temp;
+
+    do
+    {
+        system("CLS");
+        printf("\n\n\n\n\n%40s", " ");
+        printf("Enter Member Name And Day to See\n");
+        printf("%40sMembers Meal Of a Particular Day.\n", " ");
+        printf("\n\n%40sPress 'e' For Enter Or 'c' for Cancel : ", " ");
+        scanf(" %c", &ch);
+
+        if(ch == 'e')
+        {
+            printf("\n\n%40sName : ", " ");
+            scanf("%s", name);
+            printf("\n\n%40sDay (1 to 31) : ", " ");
+            scanf("%d", &day);
+
+            if(day < 1 || day > 31)
+            {
+                printf("Invalid Day Input\n");
+            }
+            else
+            {
+                index = search(name);
+
+                if(index != -1)
+                {
+                    temp = get(index);
+                    printf("\n\n%40s%s Have %d Meal On day %d\n", " ", name, temp.meals[day], day);
+                }
+            }
+        }
+        else if(ch != 'c')
+        {
+            printf("Invalid Command\n");
+        }
+
+        system("pause");
+
+    }while(ch != 'c');
+}
+
 // ******************* Report Section Ends Here ***************************
 
 
@@ -1298,7 +1387,9 @@ void displayReportSection(void)
         printf("\n\n");
 
         printf("%40s%10s%-30s\n", "[ 1 ]", " ", "View FUll Report" );
-        printf("%40s%10s%-30s\n", "[ 2 ]", " ", "Make A FIle" );
+        printf("%40s%10s%-30s\n", "[ 2 ]", " ", "Members Meal By Date" );
+        printf("%40s%10s%-30s\n", "[ 3 ]", " ", "Monthly Log" );
+        printf("%40s%10s%-30s\n", "[ 4 ]", " ", "Make A File" );
         printf("%40s%10s%-30s\n", "[ 0 ]", " ", "Back To Main Menu" );
 
         printf("\n\n%30s", " ");
@@ -1381,7 +1472,10 @@ int login(void)
             printf("\n%30s%-30s\n\n", " ", "Access Granted");
             strcpy(currentMonth, name);
             strcpy(currentPass, pass);
+
             readMembersInfo();
+            readCostInfo();
+
             return 1;
         }
 
@@ -1463,7 +1557,6 @@ void readMembersInfo()
     char filename[30];
 
     char name[30];
-    double pays;
     int meal, i;
 
     Members temp;
@@ -1472,6 +1565,7 @@ void readMembersInfo()
     strcat(filename, ".dat");
 
     memberFile = fopen(filename, "r+");
+
 
     if(memberFile == NULL)
     {
@@ -1483,29 +1577,16 @@ void readMembersInfo()
         }
     }
 
-    while(!feof(memberFile))
+    while(fscanf(memberFile, "%s", &name) != EOF)
     {
-        fscanf(memberFile, "%s", name);
 
         strcpy(temp.name, name);
 
-        for(i=0; i<10; i++)
-        {
-            fscanf(memberFile, "%lf", &pays);
-
-            if(pays != 0.0)
-            {
-                temp.pay[i] = pays;
-                paySize++;
-            }
-            else{
-                temp.pay[i] = pays;
-            }
-        }
+        fscanf(memberFile, "%lf %lf", &temp.pay[0], &temp.pay[1]);
 
         for(i=0; i<32; i++)
         {
-            fscanf(memberFile, "%d", meal);
+            fscanf(memberFile, "%d", &meal);
             temp.meals[i] = meal;
         }
 
@@ -1538,28 +1619,89 @@ void writeMembersInfo()
     {
         fprintf(memberFile, "%s\n", temp->info.name);
 
-        for(i=0; i<10; i++)
-        {
-            fprintf(memberFile, "%.2lf", temp->info.pay[i]);
-        }
-
-        fprintf(memberFile, "%s", "\n");
+        fprintf(memberFile, "%.2lf %.2lf\n", temp->info.pay[0], temp->info.pay[1]);
 
         for(i=0; i<32; i++)
         {
-            fprintf(memberFile, "%d", temp->info.meals[i]);
+            fprintf(memberFile, "%d ", temp->info.meals[i]);
         }
 
         fprintf(memberFile, "%s", "\n");
+        temp = temp->next;
     }
-
     fclose(memberFile);
 
 }
 
 
+void readCostInfo()
+{
+    FILE *file;
+    int i = 0;
+    double cost;
+
+    file = fopen("costs.dat", "r+");
+
+    if(file == NULL)
+    {
+        file = fopen("costs.dat", "w");
+
+        if(file == NULL)
+        {
+            exit(0);
+        }
+    }
+
+    while(fscanf(file, "%lf", &cost) != EOF)
+    {
+        costTable[i] = cost;
+        i++;
+    }
+    fclose(file);
+
+}
+
+void writeCostInfo()
+{
+    int i;
+    FILE *file;
+    char fileName[30];
+
+    strcpy(fileName, currentMonth);
+    strcat(fileName, "costs.dat");
+
+    file = fopen(fileName, "w+");
+
+    if(file == NULL)
+    {
+        exit(0);
+    }
+
+    for(i=0; i<DAY; i++)
+    {
+        fprintf(file, "%.2lf\n", costTable[i]);
+    }
+
+    fclose(file);
+}
 
 
+void reset()
+{
+    int i;
+
+    head = NULL;
+
+    listSize = 0;
+
+    currentMonth[0] = '\0';
+    currentPass[0] = '\0';
+
+    for(i=0; i<DAY; i++)
+    {
+        costTable[i] = 0.0;
+    }
+}
 
 
 
