@@ -1,18 +1,21 @@
                                            Monthly Report : 
                                    ----------------------------------------
 
-                                                Date :  18/3/2017 SAT  
-                                     Account Balance :  1300.00   
-                                          Total Meal :  8         
-                                          Total Cost :  400.00    
-                                   Available Balance :  900.00    
-                                           Meal rate :  50.00     
+                                                Date :  29/3/2017 WED  
+                                     Account Balance :  3300.00   
+                                          Total Meal :  75        
+                                          Total Cost :  3280.00   
+                                   Available Balance :  20.00     
+                                           Meal rate :  43.73     
 
                                    ========================================
 
 
                          NAME           TOTAL MEAL     TOTAL PAID     TOTAL COST     TOTAL DUE      
                     --------------------------------------------------------------------------------
-                         Nayem          4              800.00         200.00         -600.00        
-                         Jubel          4              500.00         200.00         -300.00        
+                         Nayem          14             500.00         612.27         112.27         
+                         Jubel          13             500.00         568.53         68.53          
+                         Badhon         15             1000.00        656.00         -344.00        
+                         Wridoy         15             800.00         656.00         -144.00        
+                         Rafi           18             500.00         787.20         287.20         
                     --------------------------------------------------------------------------------

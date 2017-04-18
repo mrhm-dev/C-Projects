@@ -163,7 +163,8 @@ char currentPass[15], currentMonth[15];
 int main()
 {
         int choice,  menu, submenu, mealDays, islogin;
-        system("color 1f");
+        //system("color 1f");
+
         readLoginFile();
 
         do
@@ -224,7 +225,7 @@ int main()
 
                                                         case 4:
                                                                 system("CLS");
-                                                                printf("\n\n%40s");
+                                                                printf("\n\n%50s", " ");
                                                                 printf("Displaying All Members");
                                                                 displayMembers();
                                                                 break;
@@ -320,9 +321,9 @@ int main()
                         }
                         else
                         {
-                                printf("Month And Password Not Match\n");
-                                printf("Please Try Again With Proper Password\n");
-                                printf("\n\nIf You Don't have Registered Yet, Please Create An Table First\n\n");
+                                printf("\n%40sMonth And Password Not Match\n", " ");
+                                printf("%40sPlease Try Again With Proper Password\n", " ");
+                                printf("\n\n%40sIf You Don't have Registered Yet, Please Create An Table First\n\n", " ");
                         }
                         break;
 
@@ -1177,7 +1178,7 @@ void reportLog(void)
     printf("\n");
 
 
-    for(i=1; i<tm.wDay; i++)
+    for(i=1; i<=tm.wDay; i++)
     {
         printf("\n%30s%10d", " ", i);
 
@@ -1639,12 +1640,16 @@ void readCostInfo()
     FILE *file;
     int i = 0;
     double cost;
+    char fileName[30];
 
-    file = fopen("costs.dat", "r+");
+    strcpy(fileName, currentMonth);
+    strcat(fileName, "costs.dat");
+
+    file = fopen(fileName, "r+");
 
     if(file == NULL)
     {
-        file = fopen("costs.dat", "w");
+        file = fopen(fileName, "w");
 
         if(file == NULL)
         {
