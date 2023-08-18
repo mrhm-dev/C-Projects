@@ -1,1 +1,4 @@
 I am Humayun Kabir , A practical programmer who loves to code. Now I am learning git and git .
+
+Today I am contributing a C projects using fork from another git user.
+This contribution will teach me how to contribute open source communnity.
